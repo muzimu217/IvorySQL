@@ -33,6 +33,7 @@
 #include "miscadmin.h"
 #include "nodes/parsenodes.h"
 #include "parser/parse_oper.h"
+#include "parser/parse_func.h"
 #include "parser/parse_merge.h"
 #include "tcop/utility.h"
 
@@ -55,6 +56,7 @@ extern bool utl_file_umask_check_hook(char **newval, void **extra, GucSource sou
 
 /* Saved hook value in case of unload */
 static oracle_datatype_precedence_hook_type pre_oracle_datatype_precedence_hook = NULL;
+static oracle_funcarg_precedence_hook_type pre_oracle_funcarg_precedence_hook = NULL;
 
 /* The hook of the merge command */
 static exec_merge_matched_hook_type pre_exec_merge_matched_hook = NULL;
@@ -100,6 +102,9 @@ _PG_init(void)
 	pre_oracle_datatype_precedence_hook = oracle_datatype_precedence_hook;
 	oracle_datatype_precedence_hook = pg_compatible_oracle_precedence;
 
+	pre_oracle_funcarg_precedence_hook = oracle_funcarg_precedence_hook;
+	oracle_funcarg_precedence_hook = pg_compatible_oracle_funcarg_precedence;
+
 	ora_exec_merge_matched_hook = IvyExecMergeMatched;
 	ora_transform_merge_stmt_hook = IvytransformMergeStmt;
 
@@ -142,6 +147,7 @@ _PG_fini(void)
 {
 	/* Uninstall Hooks */
 	oracle_datatype_precedence_hook = pre_oracle_datatype_precedence_hook;
+	oracle_funcarg_precedence_hook = pre_oracle_funcarg_precedence_hook;
 
 	pg_exec_merge_matched_hook = pre_exec_merge_matched_hook;
 	pg_transform_merge_stmt_hook = pre_transform_merge_stmt_hook;
@@ -246,3 +252,4 @@ ivorysql_ora_ProcessUtility(PlannedStmt *pstmt,
 		ora_dbms_random_reset();
 	}
 }
+
